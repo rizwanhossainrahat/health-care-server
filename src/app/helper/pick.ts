@@ -6,7 +6,7 @@ const pick=<T extends Record<string,unknown>,K extends keyof T>(obj:T,keys:K[]):
         finalObject[key]=obj[key]
     }
    }
-   console.log(finalObject)
+   
    return finalObject
 }
 

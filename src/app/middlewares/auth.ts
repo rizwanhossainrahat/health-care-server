@@ -10,8 +10,6 @@ const auth=(...roles:string[])=>{
                 throw new Error("Your are not authorized")
             }
             const verifyUser=jwtHelper.verifyToken(token,config.jwt.jwt_access_secret as string)
-           console.log(verifyUser.role)
-           console.log(...roles)
             req.user=verifyUser
             if(token && !roles.includes(verifyUser.role)){
                 throw new Error("Your are not allow to access this route")
