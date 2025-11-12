@@ -11,3 +11,5 @@ const validateRequest=(schema:ZodObject)=>async(req:Request,res:Response,next:Ne
         next(error)
     }
 }
+
+export default validateRequest;

@@ -7,14 +7,17 @@ const router=express.Router()
 
 router.get(
     "/",
-    auth(UserRole.DOCTOR, UserRole.DOCTOR),
+    auth(UserRole.DOCTOR, UserRole.ADMIN),
     scheduleController.schedulesForDoctor
 )
 
-router.post("/",scheduleController.insertIntoDB)
+router.post("/",
+    auth( UserRole.ADMIN),
+    scheduleController.insertIntoDB)
 
 router.delete(
     "/:id",
+    auth( UserRole.ADMIN),
     scheduleController.deleteScheduleFromDB
 )
 
