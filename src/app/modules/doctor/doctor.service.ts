@@ -127,7 +127,7 @@ const updateIntoDB = async (id: string, payload: Partial<IDoctorUpdateInput>) =>
                 }
             }
 
-            //  doctor - doctorSpecailties - specialities 
+             
         })
 
         return updatedData
