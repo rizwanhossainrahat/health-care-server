@@ -7,9 +7,13 @@ router.get(
     DoctorController.getAllFromDB
 )
 
+router.post("/suggestion",DoctorController.getAISuggestions)
+
 router.patch(
     "/:id",
     DoctorController.updateIntoDB
 )
+
+router.get('/:id', DoctorController.getByIdFromDB);
 
 export const doctorRoutes = router;

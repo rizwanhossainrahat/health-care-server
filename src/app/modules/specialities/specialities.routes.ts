@@ -9,8 +9,6 @@ import { SpecialtiesValidtaion } from './specialities.validation';
 
 const router = express.Router();
 
-
-
 router.get(
     '/',
     SpecialtiesController.getAllFromDB
