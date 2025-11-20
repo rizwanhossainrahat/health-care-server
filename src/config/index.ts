@@ -18,5 +18,6 @@ export default {
         jwt_refresh_secret:process.env.JWT_REFRESH_SECRET,
         jwt_refresh_expire:process.env.JWT_REFRESH_EXPIRE
     },
-    openRouterApiKey:process.env.OPENROUTER_API_KEY
+    openRouterApiKey:process.env.OPENROUTER_API_KEY,
+    stripeSecretKey:process.env.STRIPE_SECRET_KEY
 }
