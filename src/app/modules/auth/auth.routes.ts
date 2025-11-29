@@ -3,8 +3,12 @@ import { authController } from "./auth.controller"
 import auth from "../../middlewares/auth"
 import { UserRole } from "@prisma/client"
 
-
 const router=express.Router()
+
+router.get(
+    "/me",
+    authController.getMe
+)
 
 router.post(
     "/login",
