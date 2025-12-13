@@ -11,5 +11,7 @@ router.post(
     ReviewController.insertIntoDB
 );
 
+router.get('/', ReviewController.getAllFromDB);
+
 
 export const ReviewRoutes = router;
