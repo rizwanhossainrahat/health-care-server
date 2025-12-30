@@ -180,50 +180,80 @@ const updateAppointmentStatus = async (appointmentId: string, status: Appointmen
 }
 
 const cancelUnpaidAppointments = async () => {
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
 
-    const unPaidAppointments = await prisma.appointment.findMany({
-        where: {
-            createdAt: {
-                lte: thirtyMinAgo
-            },
-            paymentStatus: PaymentStatus.UNPAID
-        }
-    })
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`Attempting to cancel unpaid appointments (attempt ${attempt}/${maxRetries})`);
+            
+            const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-    const appointmentIdsToCancel = unPaidAppointments.map(appointment => appointment.id);
-
-    await prisma.$transaction(async (tnx) => {
-        await tnx.payment.deleteMany({
-            where: {
-                appointmentId: {
-                    in: appointmentIdsToCancel
-                }
-            }
-        })
-
-        await tnx.appointment.deleteMany({
-            where: {
-                id: {
-                    in: appointmentIdsToCancel
-                }
-            }
-        })
-
-        for (const unPaidAppointment of unPaidAppointments) {
-            await tnx.doctorSchedules.update({
+            const unPaidAppointments = await prisma.appointment.findMany({
                 where: {
-                    doctorId_scheduleId: {
-                        doctorId: unPaidAppointment.doctorId,
-                        scheduleId: unPaidAppointment.scheduleId
-                    }
-                },
-                data: {
-                    isBooked: false
+                    createdAt: {
+                        lte: thirtyMinAgo
+                    },
+                    paymentStatus: PaymentStatus.UNPAID
                 }
             })
+
+            const appointmentIdsToCancel = unPaidAppointments.map(appointment => appointment.id);
+
+            if (appointmentIdsToCancel.length === 0) {
+                console.log("No unpaid appointments to cancel");
+                return;
+            }
+
+            await prisma.$transaction(async (tnx) => {
+                await tnx.payment.deleteMany({
+                    where: {
+                        appointmentId: {
+                            in: appointmentIdsToCancel
+                        }
+                    }
+                })
+
+                await tnx.appointment.deleteMany({
+                    where: {
+                        id: {
+                            in: appointmentIdsToCancel
+                        }
+                    }
+                })
+
+                for (const unPaidAppointment of unPaidAppointments) {
+                    await tnx.doctorSchedules.update({
+                        where: {
+                            doctorId_scheduleId: {
+                                doctorId: unPaidAppointment.doctorId,
+                                scheduleId: unPaidAppointment.scheduleId
+                            }
+                        },
+                        data: {
+                            isBooked: false
+                        }
+                    })
+                }
+            })
+
+            console.log(`Successfully cancelled ${appointmentIdsToCancel.length} unpaid appointments`);
+            return; // Success, exit retry loop
+
+        } catch (error: any) {
+            console.error(`Attempt ${attempt} failed:`, error.message);
+            
+            // If it's a connection error and we have retries left, wait and retry
+            if (error.code === 'P1001' && attempt < maxRetries) {
+                console.log(`Retrying in ${retryDelay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                continue;
+            }
+            
+            // If it's the last attempt or a different error, throw it
+            throw error;
         }
-    })
+    }
 }
 
 const getAllFromDB = async (
